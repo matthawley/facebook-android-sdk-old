@@ -93,7 +93,7 @@ public class Tests extends Activity {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        authenticatedFacebook.authorizeCallback(requestCode, resultCode, data);
+        authenticatedFacebook.authorizeCallback(resultCode, data);
     }
 
     public void runTestPublicApi() {

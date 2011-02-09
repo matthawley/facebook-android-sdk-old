@@ -62,9 +62,10 @@ public class App extends Activity {
         }
     }
 
-    protected void onActivityResult(int requestCode, int resultCode,
-                                    Intent data) {
-        Facebook fb = Session.wakeupForAuthCallback();
-        fb.authorizeCallback(requestCode, resultCode, data);
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    	if (requestCode == Facebook.DEFAULT_AUTH_ACTIVITY_CODE) {
+	        Facebook fb = Session.wakeupForAuthCallback();
+	        fb.authorizeCallback(resultCode, data);
+    	}
     }
 }

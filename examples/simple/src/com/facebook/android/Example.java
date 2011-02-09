@@ -136,9 +136,9 @@ public class Example extends Activity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode,
-                                    Intent data) {
-        mFacebook.authorizeCallback(requestCode, resultCode, data);
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    	if (requestCode == Facebook.DEFAULT_AUTH_ACTIVITY_CODE)
+    		mFacebook.authorizeCallback(resultCode, data);
     }
 
     public class SampleAuthListener implements AuthListener {

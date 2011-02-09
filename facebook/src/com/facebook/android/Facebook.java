@@ -59,7 +59,7 @@ public class Facebook {
     private static final String LOGIN = "oauth";
 
     // Used as default activityCode by authorize(). See authorize() below.
-    private static final int DEFAULT_AUTH_ACTIVITY_CODE = 32665;
+    public static final int DEFAULT_AUTH_ACTIVITY_CODE = 32665;
 
     // Facebook server endpoints: may be modified in a subclass for testing
     protected static String DIALOG_BASE_URL =
@@ -75,7 +75,6 @@ public class Facebook {
 
     private Activity mAuthActivity;
     private String[] mAuthPermissions;
-    private int mAuthActivityCode;
     private DialogListener mAuthDialogListener;
 
     /**
@@ -231,7 +230,6 @@ public class Facebook {
 
         mAuthActivity = activity;
         mAuthPermissions = permissions;
-        mAuthActivityCode = activityCode;
         try {
             activity.startActivityForResult(intent, activityCode);
         } catch (ActivityNotFoundException e) {
@@ -342,69 +340,66 @@ public class Facebook {
      * http://developer.android.com/reference/android/app/
      *   Activity.html#onActivityResult(int, int, android.content.Intent)
      */
-    public void authorizeCallback(int requestCode, int resultCode, Intent data) {
-        if (requestCode == mAuthActivityCode) {
+    public void authorizeCallback(int resultCode, Intent data) {
+        // Successfully redirected.
+        if (resultCode == Activity.RESULT_OK) {
 
-            // Successfully redirected.
-            if (resultCode == Activity.RESULT_OK) {
+            // Check OAuth 2.0/2.10 error code.
+            String error = data.getStringExtra("error");
+            if (error == null) {
+                error = data.getStringExtra("error_type");
+            }
 
-                // Check OAuth 2.0/2.10 error code.
-                String error = data.getStringExtra("error");
-                if (error == null) {
-                    error = data.getStringExtra("error_type");
-                }
-
-                // A Facebook error occurred.
-                if (error != null) {
-                    if (error.equals(SINGLE_SIGN_ON_DISABLED)
-                            || error.equals("AndroidAuthKillSwitchException")) {
-                        Log.d("Facebook-authorize", "Hosted auth currently "
-                            + "disabled. Retrying dialog auth...");
-                        startDialogAuth(mAuthActivity, mAuthPermissions);
-                    } else if (error.equals("access_denied")
-                            || error.equals("OAuthAccessDeniedException")) {
-                        Log.d("Facebook-authorize", "Login canceled by user.");
-                        mAuthDialogListener.onCancel();
-                    } else {
-                        Log.d("Facebook-authorize", "Login failed: " + error);
-                        mAuthDialogListener.onFacebookError(
-                                new FacebookError(error));
-                    }
-
-                // No errors.
-                } else {
-                    setAccessToken(data.getStringExtra(TOKEN));
-                    setAccessExpiresIn(data.getStringExtra(EXPIRES));
-                    if (isSessionValid()) {
-                        Log.d("Facebook-authorize",
-                                "Login Success! access_token="
-                                        + getAccessToken() + " expires="
-                                        + getAccessExpires());
-                        mAuthDialogListener.onComplete(data.getExtras());
-                    } else {
-                        mAuthDialogListener.onFacebookError(new FacebookError(
-                                        "Failed to receive access token."));
-                    }
-                }
-
-            // An error occurred before we could be redirected.
-            } else if (resultCode == Activity.RESULT_CANCELED) {
-
-                // An Android error occured.
-                if (data != null) {
-                    Log.d("Facebook-authorize",
-                            "Login failed: " + data.getStringExtra("error"));
-                    mAuthDialogListener.onError(
-                            new DialogError(
-                                    data.getStringExtra("error"),
-                                    data.getIntExtra("error_code", -1),
-                                    data.getStringExtra("failing_url")));
-
-                // User pressed the 'back' button.
-                } else {
+            // A Facebook error occurred.
+            if (error != null) {
+                if (error.equals(SINGLE_SIGN_ON_DISABLED)
+                        || error.equals("AndroidAuthKillSwitchException")) {
+                    Log.d("Facebook-authorize", "Hosted auth currently "
+                        + "disabled. Retrying dialog auth...");
+                    startDialogAuth(mAuthActivity, mAuthPermissions);
+                } else if (error.equals("access_denied")
+                        || error.equals("OAuthAccessDeniedException")) {
                     Log.d("Facebook-authorize", "Login canceled by user.");
                     mAuthDialogListener.onCancel();
+                } else {
+                    Log.d("Facebook-authorize", "Login failed: " + error);
+                    mAuthDialogListener.onFacebookError(
+                            new FacebookError(error));
                 }
+
+            // No errors.
+            } else {
+                setAccessToken(data.getStringExtra(TOKEN));
+                setAccessExpiresIn(data.getStringExtra(EXPIRES));
+                if (isSessionValid()) {
+                    Log.d("Facebook-authorize",
+                            "Login Success! access_token="
+                                    + getAccessToken() + " expires="
+                                    + getAccessExpires());
+                    mAuthDialogListener.onComplete(data.getExtras());
+                } else {
+                    mAuthDialogListener.onFacebookError(new FacebookError(
+                                    "Failed to receive access token."));
+                }
+            }
+
+        // An error occurred before we could be redirected.
+        } else if (resultCode == Activity.RESULT_CANCELED) {
+
+            // An Android error occured.
+            if (data != null) {
+                Log.d("Facebook-authorize",
+                        "Login failed: " + data.getStringExtra("error"));
+                mAuthDialogListener.onError(
+                        new DialogError(
+                                data.getStringExtra("error"),
+                                data.getIntExtra("error_code", -1),
+                                data.getStringExtra("failing_url")));
+
+            // User pressed the 'back' button.
+            } else {
+                Log.d("Facebook-authorize", "Login canceled by user.");
+                mAuthDialogListener.onCancel();
             }
         }
     }
