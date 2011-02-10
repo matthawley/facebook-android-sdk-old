@@ -92,6 +92,11 @@ public class Facebook {
         }
         mAppId = appId;
     }
+    
+    public void restore(Activity activity, final DialogListener listener) {
+    	mAuthActivity = activity;
+    	mAuthDialogListener = listener;
+    }
 
     /**
      * Default authorize method. Grants only basic permissions.
