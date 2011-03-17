@@ -20,6 +20,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -27,10 +28,12 @@ import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.ViewAnimator;
 
@@ -38,8 +41,12 @@ import com.facebook.android.Facebook.DialogListener;
 
 public class FbDialog extends Dialog {
 
-    static final float[] DIMENSIONS_LANDSCAPE = {460, 260};
-    static final float[] DIMENSIONS_PORTRAIT = {280, 420};
+    static final int FB_BLUE = 0xFF6D84B4;
+    static final float[] DIMENSIONS_DIFF_LANDSCAPE = {20, 60};
+    static final float[] DIMENSIONS_DIFF_PORTRAIT = {40, 60};
+    static final FrameLayout.LayoutParams FILL = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.FILL_PARENT);
+    static final int MARGIN = 4;
+    static final int PADDING = 2;
     static final String DISPLAY_STRING = "touch";
 
     private String mUrl;
@@ -65,18 +72,20 @@ public class FbDialog extends Dialog {
 
         Display display = getWindow().getWindowManager().getDefaultDisplay();
         final float scale = getContext().getResources().getDisplayMetrics().density;
-        float[] dimensions = (display.getWidth() < display.getHeight())
-                    			? DIMENSIONS_PORTRAIT 
-                    			: DIMENSIONS_LANDSCAPE;
+		final int orientation = getContext().getResources().getConfiguration().orientation;
+		float[] dimensions = (orientation == Configuration.ORIENTATION_LANDSCAPE)
+                    			? DIMENSIONS_DIFF_LANDSCAPE 
+                    			: DIMENSIONS_DIFF_PORTRAIT;
         
-        addContentView(mContent, new FrameLayout.LayoutParams(
-                (int) (dimensions[0] * scale + 0.5f),
-                (int) (dimensions[1] * scale + 0.5f)));
+		addContentView(mContent, new LinearLayout.LayoutParams(
+                		display.getWidth() - ((int) (dimensions[0] * scale + 0.5f)),
+            			display.getHeight() - ((int) (dimensions[1] * scale + 0.5f))));
         
         switcher = (ViewAnimator) findViewById(R.id.switcher);
         mTitle = (TextView) findViewById(R.id.title);
         mWebView = (WebView) findViewById(R.id.web);
         
+
         mWebView.setWebViewClient(new FbDialog.FbWebViewClient());
         mWebView.getSettings().setJavaScriptEnabled(true);
         mWebView.loadUrl(mUrl);
