@@ -199,6 +199,22 @@ public class Facebook {
             startDialogAuth(activity, permissions);
         }
     }
+    
+    /**
+     * Will check to see if single sign-on is available to be used.
+     * @param activity
+     * 			The Android Activity that will parent the ProxyAuth Activity.
+     */
+    public boolean singleSignOnAvailable(Activity activity) {
+    	Intent intent = new Intent();
+    	intent.setClassName("com.facebook.katana", "com.facebook.katana.ProxyAuth");
+    	
+    	if (!validateAppSignatureForIntent(activity, intent))
+    		return false;
+    	
+    	ResolveInfo info = activity.getPackageManager().resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY);
+    	return info != null;
+    }
 
     /**
      * Internal method to handle single sign-on backend for authorize().
