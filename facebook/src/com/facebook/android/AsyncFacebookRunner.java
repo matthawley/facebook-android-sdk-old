@@ -20,7 +20,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 
-import android.content.Context;
 import android.os.Bundle;
 
 /**
@@ -50,56 +49,6 @@ public class AsyncFacebookRunner {
 
     public AsyncFacebookRunner(Facebook fb) {
         this.fb = fb;
-    }
-
-    /**
-     * Invalidate the current user session by removing the access token in
-     * memory, clearing the browser cookies, and calling auth.expireSession
-     * through the API. The application will be notified when logout is
-     * complete via the callback interface.
-     *
-     * Note that this method is asynchronous and the callback will be invoked
-     * in a background thread; operations that affect the UI will need to be
-     * posted to the UI thread or an appropriate handler.
-     *
-     * @param context
-     *            The Android context in which the logout should be called: it
-     *            should be the same context in which the login occurred in
-     *            order to clear any stored cookies
-     * @param listener
-     *            Callback interface to notify the application when the request
-     *            has completed.
-     * @param state
-     *            An arbitrary object used to identify the request when it
-     *            returns to the callback. This has no effect on the request
-     *            itself.
-     */
-    public void logout(final Context context,
-                       final RequestListener listener,
-                       final Object state) {
-        new Thread() {
-            @Override public void run() {
-                try {
-                    String response = fb.logout(context);
-                    if (response.length() == 0 || response.equals("false")){
-                        listener.onFacebookError(new FacebookError(
-                                "auth.expireSession failed"), state);
-                        return;
-                    }
-                    listener.onComplete(response, state);
-                } catch (FileNotFoundException e) {
-                    listener.onFileNotFoundException(e, state);
-                } catch (MalformedURLException e) {
-                    listener.onMalformedURLException(e, state);
-                } catch (IOException e) {
-                    listener.onIOException(e, state);
-                }
-            }
-        }.start();
-    }
-
-    public void logout(final Context context, final RequestListener listener) {
-        logout(context, listener, /* state */ null);
     }
 
     /**

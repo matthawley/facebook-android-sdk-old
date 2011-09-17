@@ -427,8 +427,7 @@ public class Facebook {
 
     /**
      * Invalidate the current user session by removing the access token in
-     * memory, clearing the browser cookie, and calling auth.expireSession
-     * through the API.
+     * memory and clearing the browser cookie.
      *
      * Note that this method blocks waiting for a network response, so do not
      * call it in a UI thread.
@@ -437,20 +436,11 @@ public class Facebook {
      *            The Android context in which the logout should be called: it
      *            should be the same context in which the login occurred in
      *            order to clear any stored cookies
-     * @throws IOException
-     * @throws MalformedURLException
-     * @return JSON string representation of the auth.expireSession response
-     *            ("true" if successful)
      */
-    public String logout(Context context)
-            throws MalformedURLException, IOException {
+    public void logout(Context context) {
         Util.clearCookies(context);
-        Bundle b = new Bundle();
-        b.putString("method", "auth.expireSession");
-        String response = request(b);
         setAccessToken(null);
         setAccessExpires(0);
-        return response;
     }
 
     /**
